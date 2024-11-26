@@ -37,6 +37,13 @@ app.post('/', async (req, res) => {
   }
 });
 
+// Create an HTTP server
+const server = http.createServer((req, res) => {
+  res.statusCode = 200;
+  const msg = 'Hello Node!\n'; // Simple response
+  res.end(msg);
+});
+
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
