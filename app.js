@@ -1,3 +1,4 @@
+const http = require('http');
 const express = require('express');
 const bodyParser = require('body-parser');
 const axios = require('axios');
@@ -22,7 +23,7 @@ app.post('/', async (req, res) => {
   }
 
   // Firebase Realtime Database URL
-  const firebaseUrl = 'https://your-firebase-database.firebaseio.com/data.json';
+  const firebaseUrl = 'https://esp32sliitresearch-default-rtdb.firebaseio.com/';
 
   try {
     // Forward the data to Firebase
@@ -40,7 +41,7 @@ app.post('/', async (req, res) => {
 // Create an HTTP server
 const server = http.createServer((req, res) => {
   res.statusCode = 200;
-  const msg = 'Hello Node!\n'; // Simple response
+  const msg = 'Hello Node!\n'; 
   res.end(msg);
 });
 
