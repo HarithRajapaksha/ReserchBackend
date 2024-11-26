@@ -9,7 +9,7 @@ const PORT = 5000;
 app.use(bodyParser.json());
 
 // Endpoint to receive data from ESP32
-app.post('/data', async (req, res) => {
+app.post('/', async (req, res) => {
   const data = req.body; // JSON data sent by ESP32
 
   if (!data) {
