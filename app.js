@@ -1,40 +1,67 @@
 const http = require('http');
 const express = require('express');
 const bodyParser = require('body-parser');
-const axios = require('axios');
+const { initializeApp } = require('firebase/app');
+const { getDatabase, ref, push, set } = require('firebase/database');
+const { getAuth, signInWithEmailAndPassword } = require('firebase/auth');
 
 const app = express();
-const PORT = process.env.PORT||5000;
+const PORT = process.env.PORT || 5000;
 
 // Middleware to parse JSON data
 app.use(bodyParser.json());
 
-// GET Endpoint for root URL
-app.get('/', (req, res) => {
+app.use(express.json());
+
+
+// Firebase Configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyALY_i4fAMJA3pNUXkJHOFfILbkTJiI8ZE",
+  authDomain: "esp32sliitresearch.firebaseapp.com",
+  databaseURL: "esp32sliitresearch-default-rtdb.firebaseio.com",
+  projectId: "esp32sliitresearch",
+  storageBucket: "esp32sliitresearch.appspot.com",
+  messagingSenderId: "957117000572",
+  appId: "1:957117000572:web:a5268b528db68a7e8692f9"
+};
+
+// Initialize Firebase
+const firebaseApp = initializeApp(firebaseConfig);
+const database = getDatabase(firebaseApp);
+const auth = getAuth(firebaseApp);
+
+// Firebase Authentication Credentials
+const email = "it21192050@my.sliit.lk";
+const password = "200007901313";
+
+// Root Endpoint
+app.get('/get', (req, res) => {
   res.send('Welcome to the ESP32 Data Forwarding Server!');
 });
 
-// Endpoint to receive data from ESP32
+// Endpoint to handle data from ESP32
 app.post('/', async (req, res) => {
   const data = req.body; // JSON data sent by ESP32
+  console.log('Data received:', data);
 
   if (!data) {
     return res.status(400).json({ error: 'No data received' });
   }
 
-  // Firebase Realtime Database URL
-  const firebaseUrl = 'https://esp32sliitresearch-default-rtdb.firebaseio.com/';
-
   try {
-    // Forward the data to Firebase
-    const response = await axios.post(firebaseUrl, data, {
-      headers: { 'Content-Type': 'application/json' },
-    });
+    // Authenticate with Firebase
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    console.log('Successfully authenticated:', userCredential.user.email);
 
-    return res.status(response.status).json(response.data);
+    // Write data to Firebase Realtime Database
+    const dbRef = ref(database, 'data');
+    const newDataRef = push(dbRef); // Create a unique key for the data
+    await set(newDataRef, data);
+
+    res.status(200).json({ message: 'Data successfully sent to Firebase', dataKey: newDataRef.key });
   } catch (error) {
-    console.error('Error forwarding data to Firebase:', error.message);
-    return res.status(500).json({ error: error.message });
+    console.error('Error sending data to Firebase:', error.message);
+    res.status(500).json({ error: error.message });
   }
 });
 
