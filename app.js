@@ -8,6 +8,11 @@ const PORT = 5000;
 // Middleware to parse JSON data
 app.use(bodyParser.json());
 
+// GET Endpoint for root URL
+app.get('/', (req, res) => {
+  res.send('Welcome to the ESP32 Data Forwarding Server!');
+});
+
 // Endpoint to receive data from ESP32
 app.post('/', async (req, res) => {
   const data = req.body; // JSON data sent by ESP32
