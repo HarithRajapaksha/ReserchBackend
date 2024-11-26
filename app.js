@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const axios = require('axios');
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT||5000;
 
 // Middleware to parse JSON data
 app.use(bodyParser.json());
