@@ -2,7 +2,7 @@ const http = require('http');
 const express = require('express');
 const bodyParser = require('body-parser');
 const { initializeApp } = require('firebase/app');
-const { getDatabase, ref, push, set } = require('firebase/database');
+const { getDatabase, ref, push, set, get, update } = require('firebase/database');
 const { getAuth, signInWithEmailAndPassword } = require('firebase/auth');
 
 const app = express();
@@ -10,15 +10,13 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware to parse JSON data
 app.use(bodyParser.json());
-
 app.use(express.json());
-
 
 // Firebase Configuration
 const firebaseConfig = {
   apiKey: "AIzaSyALY_i4fAMJA3pNUXkJHOFfILbkTJiI8ZE",
   authDomain: "esp32sliitresearch.firebaseapp.com",
-  databaseURL: "esp32sliitresearch-default-rtdb.firebaseio.com",
+  databaseURL: "https://esp32sliitresearch-default-rtdb.firebaseio.com",
   projectId: "esp32sliitresearch",
   storageBucket: "esp32sliitresearch.appspot.com",
   messagingSenderId: "957117000572",
@@ -39,7 +37,7 @@ app.get('/get', (req, res) => {
   res.send('Welcome to the ESP32 Data Forwarding Server!');
 });
 
-// Endpoint to handle data from ESP32
+// Endpoint to handle data from ESP32 (POST request)
 app.post('/', async (req, res) => {
   const data = req.body; // JSON data sent by ESP32
   console.log('Data received:', data);
@@ -61,6 +59,47 @@ app.post('/', async (req, res) => {
     res.status(200).json({ message: 'Data successfully sent to Firebase', dataKey: newDataRef.key });
   } catch (error) {
     console.error('Error sending data to Firebase:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Endpoint to get data from Firebase (GET request)
+app.get('/getdata', async (req, res) => {
+  try {
+    const dbRef = ref(database, 'data');
+    const snapshot = await get(dbRef); // Get all data from the 'data' node
+    if (snapshot.exists()) {
+      res.status(200).json(snapshot.val()); // Send data as JSON
+    } else {
+      res.status(404).json({ message: 'No data found' });
+    }
+  } catch (error) {
+    console.error('Error getting data from Firebase:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Endpoint to update data in Firebase (PUT request)
+app.put('/update/:id', async (req, res) => {
+  const dataId = req.params.id;
+  const newData = req.body; // New data to update
+
+  if (!newData) {
+    return res.status(400).json({ error: 'No data to update' });
+  }
+
+  try {
+    // Authenticate with Firebase
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    console.log('Successfully authenticated:', userCredential.user.email);
+
+    // Update the existing data in Firebase
+    const dataRef = ref(database, 'data/' + dataId);
+    await update(dataRef, newData);
+
+    res.status(200).json({ message: 'Data successfully updated', dataId });
+  } catch (error) {
+    console.error('Error updating data in Firebase:', error.message);
     res.status(500).json({ error: error.message });
   }
 });
