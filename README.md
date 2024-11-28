@@ -1,3 +1,3 @@
 # ReserchBackend
 
-Currently working Ip is -http://34.224.18.15:5000/get
+Currently working Ip is -http://3.95.30.119:5000/get
