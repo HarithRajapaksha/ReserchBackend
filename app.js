@@ -104,6 +104,25 @@ app.put('/update/:id', async (req, res) => {
   }
 });
 
+// get data from firebase by id
+app.get('/getdata/:id', async (req, res) => {
+  const dataId = req.params.id;
+
+  try {
+    const dataRef = ref(database, 'data/' + dataId);
+    const snapshot = await get(dataRef);
+    if (snapshot.exists()) {
+      res.status(200).json(snapshot.val());
+    } else {
+      res.status(404).json({ message: 'No data found' });
+    }
+  } catch (error) {
+    console.error('Error getting data from Firebase:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 // Create an HTTP server
 const server = http.createServer((req, res) => {
   res.statusCode = 200;
